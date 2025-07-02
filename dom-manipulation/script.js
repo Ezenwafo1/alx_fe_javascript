@@ -38,7 +38,7 @@ function showRandomQuote() {
   const randomIndex = Math.floor(Math.random() * quotes.length);
   const selectedQuote = quotes[randomIndex];
 
-  quoteDisplay.textContent = selectedQuote;
+  quoteDisplay.innerHTML = selectedQuote;
 }
 
 newQuoteButton.addEventListener("click", showRandomQuote);
