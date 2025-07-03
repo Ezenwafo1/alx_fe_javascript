@@ -1,5 +1,4 @@
 
-
 const quotesByCategory = {
   motivation: [
     "Push yourself, because no one else is going to do it for you.",
@@ -22,9 +21,85 @@ const quotesByCategory = {
 const categorySelect = document.getElementById("categorySelect");
 const quoteDisplay = document.getElementById("quoteDisplay");
 const newQuoteButton = document.getElementById("newQuote");
-const addQuoteForm = document.getElementById("addQuoteForm");
-const categoryInput = document.getElementById("categoryInput");
-const quoteInput = document.getElementById("quoteInput");
+
+
+function createAddQuoteForm() {
+  const formTitle = document.createElement("h2");
+  formTitle.textContent = "Add a New Quote";
+  document.body.appendChild(formTitle);
+
+  const form = document.createElement("form");
+  form.id = "addQuoteForm";
+
+  
+  const catLabel = document.createElement("label");
+  catLabel.setAttribute("for", "categoryInput");
+  catLabel.textContent = "Category: ";
+  form.appendChild(catLabel);
+
+  const categoryInput = document.createElement("input");
+  categoryInput.id = "categoryInput";
+  categoryInput.placeholder = "e.g., motivation or new";
+  categoryInput.required = true;
+  form.appendChild(categoryInput);
+
+  form.appendChild(document.createElement("br"));
+  form.appendChild(document.createElement("br"));
+
+
+  const quoteLabel = document.createElement("label");
+  quoteLabel.setAttribute("for", "quoteInput");
+  quoteLabel.textContent = "Quote: ";
+  form.appendChild(quoteLabel);
+
+  const quoteInput = document.createElement("input");
+  quoteInput.id = "quoteInput";
+  quoteInput.placeholder = "Type your quote here";
+  quoteInput.style.width = "60%";
+  quoteInput.required = true;
+  form.appendChild(quoteInput);
+
+  form.appendChild(document.createElement("br"));
+  form.appendChild(document.createElement("br"));
+
+
+  const submitBtn = document.createElement("button");
+  submitBtn.type = "submit";
+  submitBtn.textContent = "Add Quote";
+  form.appendChild(submitBtn);
+
+  document.body.appendChild(form);
+
+ 
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const newCategory = categoryInput.value.trim().toLowerCase();
+    const newQuote = quoteInput.value.trim();
+
+    if (!newCategory || !newQuote) {
+      alert("Please enter both a category and a quote.");
+      return;
+    }
+
+   
+    if (!quotesByCategory[newCategory]) {
+      quotesByCategory[newCategory] = [];
+    }
+
+
+    quotesByCategory[newCategory].push(newQuote);
+
+
+    populateCategories();
+    categorySelect.value = newCategory;
+    showRandomQuote();
+
+
+    categoryInput.value = "";
+    quoteInput.value = "";
+  });
+}
 
 
 function populateCategories() {
@@ -42,7 +117,7 @@ function showRandomQuote() {
   const selectedCategory = categorySelect.value;
   const quotes = quotesByCategory[selectedCategory];
 
-  if (quotes.length === 0) {
+  if (!quotes || quotes.length === 0) {
     quoteDisplay.innerHTML = "No quotes in this category yet.";
     return;
   }
@@ -53,43 +128,10 @@ function showRandomQuote() {
 }
 
 
-addQuoteForm.addEventListener("submit", function (e) {
-  e.preventDefault();
-
-  const newCategory = categoryInput.value.trim().toLowerCase();
-  const newQuote = quoteInput.value.trim();
-
-  if (!newCategory || !newQuote) {
-    alert("Please enter both a category and a quote.");
-    return;
-  }
-
- 
-  if (!quotesByCategory[newCategory]) {
-    quotesByCategory[newCategory] = [];
-  }
-
-
-  quotesByCategory[newCategory].push(newQuote);
-
-
-  populateCategories();
-
-
-  categorySelect.value = newCategory;
-
- 
-  showRandomQuote();
-
-
-  categoryInput.value = "";
-  quoteInput.value = "";
-});
- 
-
 newQuoteButton.addEventListener("click", showRandomQuote);
 
 
 populateCategories();
 categorySelect.value = Object.keys(quotesByCategory)[0];
 showRandomQuote();
+createAddQuoteForm();
