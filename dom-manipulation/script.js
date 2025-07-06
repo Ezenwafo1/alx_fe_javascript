@@ -136,9 +136,7 @@ async function syncQuotes() {
   try {
     const response = await fetch(serverUrl);
     const serverData = await response.json();
-
     const serverQuotes = JSON.parse(serverData.title || "{}");
-
     if (JSON.stringify(serverQuotes) !== JSON.stringify(quotesByCategory)) {
       quotesByCategory = serverQuotes;
       saveQuotes();
@@ -146,6 +144,7 @@ async function syncQuotes() {
       filterQuotes();
       showConflictNotice();
     }
+    console.log("Quotes synced with server!");
   } catch (error) {
     console.error("Sync error:", error);
   }
