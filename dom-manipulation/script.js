@@ -36,27 +36,28 @@ function getSavedFilter() {
 
 
 function populateCategories() {
-  categorySelect.innerHTML = "";
+  const categoryFilter = document.getElementById("categoryFilter");
+  categoryFilter.innerHTML = "";
 
-  const allOption = document.createElement("option");
-  allOption.value = "all";
-  allOption.textContent = "All Categories";
-  categorySelect.appendChild(allOption);
+  const allCategories = ["all", ...Object.keys(quotesByCategory)];
 
-  for (let category in quotesByCategory) {
+  allCategories.map(category => {
     const option = document.createElement("option");
     option.value = category;
-    option.textContent = category.charAt(0).toUpperCase() + category.slice(1);
-    categorySelect.appendChild(option);
-  }
+    option.textContent =
+      category === "all"
+        ? "All Categories"
+        : category.charAt(0).toUpperCase() + category.slice(1);
+    categoryFilter.appendChild(option);
+  });
 
   const savedFilter = getSavedFilter();
-  categorySelect.value = savedFilter;
+  categoryFilter.value = savedFilter;
 }
 
 
 function filterQuotes() {
-  const selected = categorySelect.value;
+  const selected = categoryFilter.value;
   saveSelectedFilter(selected);
 
   let quotesToDisplay = [];
