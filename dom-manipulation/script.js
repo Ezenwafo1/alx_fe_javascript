@@ -138,23 +138,18 @@ function importFromJsonFile(event) {
   fileReader.readAsText(event.target.files[0]);
 }
 
-
-async function syncQuotes() {
+async function sendQuotesToServer() {
   try {
-    const response = await fetch(serverUrl);
-    const serverData = await response.json();
-
-    const serverQuotes = JSON.parse(serverData.title || "{}");
-
-    if (JSON.stringify(serverQuotes) !== JSON.stringify(quotesByCategory)) {
-      quotesByCategory = serverQuotes;
-      saveQuotes();
-      populateCategories();
-      filterQuotes();
-      showConflictNotice();
-    }
+    await fetch(serverUrl, {
+      method: "POST",
+      body: JSON.stringify({ title: JSON.stringify(quotesByCategory) }),
+      headers: {
+        "Content-Type": "application/json; charset=UTF-8"
+      }
+    });
+    console.log("Quotes sent to server.");
   } catch (error) {
-    console.error("Sync error:", error);
+    console.error("Send error:", error);
   }
 }
 
