@@ -10,7 +10,7 @@ const exportBtn = document.getElementById("exportBtn");
 const syncNowBtn = document.getElementById("syncNow");
 const conflictNotice = document.getElementById("conflictNotice");
 
-const serverUrl = "https://jsonplaceholder.typicode.com/posts/1";
+const serverUrl = "https://jsonplaceholder.typicode.com/posts/1"; 
 
 if (localStorage.getItem("quotesByCategory")) {
   quotesByCategory = JSON.parse(localStorage.getItem("quotesByCategory"));
@@ -25,39 +25,44 @@ if (localStorage.getItem("quotesByCategory")) {
   saveQuotes();
 }
 
+
 function saveQuotes() {
   localStorage.setItem("quotesByCategory", JSON.stringify(quotesByCategory));
 }
 
+
 function saveSelectedFilter(selectedCategory) {
   localStorage.setItem("selectedFilter", selectedCategory);
 }
-
 function getSavedFilter() {
   return localStorage.getItem("selectedFilter") || "all";
 }
 
+
 function populateCategories() {
   categoryFilter.innerHTML = "";
+
   const allCategories = ["all", ...Object.keys(quotesByCategory)];
+
   allCategories.map(category => {
     const option = document.createElement("option");
     option.value = category;
     option.textContent =
-      category === "all"
-        ? "All Categories"
-        : category.charAt(0).toUpperCase() + category.slice(1);
+      category === "all" ? "All Categories" : category.charAt(0).toUpperCase() + category.slice(1);
     categoryFilter.appendChild(option);
   });
+
   const selectedCategory = getSavedFilter();
   categoryFilter.value = selectedCategory;
 }
+
 
 function filterQuotes() {
   const selectedCategory = categoryFilter.value;
   saveSelectedFilter(selectedCategory);
 
   let quotesToDisplay = [];
+
   if (selectedCategory === "all") {
     for (let cat in quotesByCategory) {
       quotesToDisplay = quotesToDisplay.concat(quotesByCategory[cat]);
@@ -75,22 +80,29 @@ function filterQuotes() {
   }
 }
 
+
 addQuoteForm.addEventListener("submit", function (e) {
   e.preventDefault();
+
   const category = categoryInput.value.trim().toLowerCase();
   const quote = quoteInput.value.trim();
+
   if (!category || !quote) return;
+
   if (!quotesByCategory[category]) {
     quotesByCategory[category] = [];
   }
+
   quotesByCategory[category].push(quote);
   saveQuotes();
   populateCategories();
   categoryFilter.value = category;
   filterQuotes();
+
   categoryInput.value = "";
   quoteInput.value = "";
 });
+
 
 exportBtn.addEventListener("click", function () {
   const blob = new Blob([JSON.stringify(quotesByCategory, null, 2)], { type: "application/json" });
@@ -103,6 +115,7 @@ exportBtn.addEventListener("click", function () {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 });
+
 
 function importFromJsonFile(event) {
   const fileReader = new FileReader();
@@ -124,18 +137,14 @@ function importFromJsonFile(event) {
   fileReader.readAsText(event.target.files[0]);
 }
 
-function showConflictNotice() {
-  conflictNotice.style.display = "block";
-  setTimeout(() => {
-    conflictNotice.style.display = "none";
-  }, 5000);
-}
 
-async function syncQuotes() {
+async function fetchQuotesFromServer() {
   try {
     const response = await fetch(serverUrl);
     const serverData = await response.json();
+
     const serverQuotes = JSON.parse(serverData.title || "{}");
+
     if (JSON.stringify(serverQuotes) !== JSON.stringify(quotesByCategory)) {
       quotesByCategory = serverQuotes;
       saveQuotes();
@@ -148,14 +157,20 @@ async function syncQuotes() {
   }
 }
 
+function showConflictNotice() {
+  conflictNotice.style.display = "block";
+  setTimeout(() => {
+    conflictNotice.style.display = "none";
+  }, 5000);
+}
+
+
 async function sendQuotesToServer() {
   try {
     await fetch(serverUrl, {
       method: "POST",
       body: JSON.stringify({ title: JSON.stringify(quotesByCategory) }),
-      headers: {
-        "Content-Type": "application/json; charset=UTF-8"
-      }
+      headers: { "Content-type": "application/json; charset=UTF-8" }
     });
     console.log("Quotes sent to server.");
   } catch (error) {
@@ -163,8 +178,13 @@ async function sendQuotesToServer() {
   }
 }
 
-syncNowBtn.addEventListener("click", syncQuotes);
-setInterval(syncQuotes, 10000);
+
+syncNowBtn.addEventListener("click", fetchQuotesFromServer);
+
+
+setInterval(fetchQuotesFromServer, 10000);
+
+
 newQuoteButton.addEventListener("click", filterQuotes);
 populateCategories();
 filterQuotes();
