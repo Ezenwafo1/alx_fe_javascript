@@ -57,17 +57,17 @@ function populateCategories() {
 
 
 function filterQuotes() {
-  const selected = categoryFilter.value;
-  saveSelectedFilter(selected);
+  const selectedCategory = categoryFilter.value;
+  saveSelectedFilter(selectedCategory);
 
   let quotesToDisplay = [];
 
-  if (selected === "all") {
+  if (selectedCategory === "all") {
     for (let cat in quotesByCategory) {
       quotesToDisplay = quotesToDisplay.concat(quotesByCategory[cat]);
     }
   } else {
-    quotesToDisplay = quotesByCategory[selected] || [];
+    quotesToDisplay = quotesByCategory[selectedCategory] || [];
   }
 
   if (quotesToDisplay.length === 0) {
@@ -76,9 +76,11 @@ function filterQuotes() {
     const randomQuote = quotesToDisplay[Math.floor(Math.random() * quotesToDisplay.length)];
     quoteDisplay.innerHTML = randomQuote;
 
+    // Save to sessionStorage
     sessionStorage.setItem("lastViewedQuote", randomQuote);
   }
 }
+
 
 
 addQuoteForm.addEventListener("submit", function (e) {
