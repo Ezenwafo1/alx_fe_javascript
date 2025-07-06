@@ -1,5 +1,18 @@
 let quotesByCategory = {};
 
+const categoryFilter = document.getElementById("categoryFilter");
+const quoteDisplay = document.getElementById("quoteDisplay");
+const newQuoteButton = document.getElementById("newQuote");
+const addQuoteForm = document.getElementById("addQuoteForm");
+const categoryInput = document.getElementById("categoryInput");
+const quoteInput = document.getElementById("quoteInput");
+const exportBtn = document.getElementById("exportBtn");
+const syncNowBtn = document.getElementById("syncNow");
+const conflictNotice = document.getElementById("conflictNotice");
+
+const serverUrl = "https://jsonplaceholder.typicode.com/posts/1";
+
+
 if (localStorage.getItem("quotesByCategory")) {
   quotesByCategory = JSON.parse(localStorage.getItem("quotesByCategory"));
 } else {
@@ -13,30 +26,21 @@ if (localStorage.getItem("quotesByCategory")) {
   saveQuotes();
 }
 
-const categorySelect = document.getElementById("categorySelect");
-const quoteDisplay = document.getElementById("quoteDisplay");
-const newQuoteButton = document.getElementById("newQuote");
-const addQuoteForm = document.getElementById("addQuoteForm");
-const categoryInput = document.getElementById("categoryInput");
-const quoteInput = document.getElementById("quoteInput");
-const exportBtn = document.getElementById("exportBtn");
-
 
 function saveQuotes() {
   localStorage.setItem("quotesByCategory", JSON.stringify(quotesByCategory));
 }
 
-function saveSelectedFilter(category) {
-  localStorage.setItem("selectedFilter", category);
-}
 
+function saveSelectedFilter(selectedCategory) {
+  localStorage.setItem("selectedFilter", selectedCategory);
+}
 function getSavedFilter() {
   return localStorage.getItem("selectedFilter") || "all";
 }
 
 
 function populateCategories() {
-  const categoryFilter = document.getElementById("categoryFilter");
   categoryFilter.innerHTML = "";
 
   const allCategories = ["all", ...Object.keys(quotesByCategory)];
@@ -45,14 +49,12 @@ function populateCategories() {
     const option = document.createElement("option");
     option.value = category;
     option.textContent =
-      category === "all"
-        ? "All Categories"
-        : category.charAt(0).toUpperCase() + category.slice(1);
+      category === "all" ? "All Categories" : category.charAt(0).toUpperCase() + category.slice(1);
     categoryFilter.appendChild(option);
   });
 
-  const savedFilter = getSavedFilter();
-  categoryFilter.value = savedFilter;
+  const selectedCategory = getSavedFilter();
+  categoryFilter.value = selectedCategory;
 }
 
 
@@ -75,30 +77,27 @@ function filterQuotes() {
   } else {
     const randomQuote = quotesToDisplay[Math.floor(Math.random() * quotesToDisplay.length)];
     quoteDisplay.innerHTML = randomQuote;
-
-    // Save to sessionStorage
     sessionStorage.setItem("lastViewedQuote", randomQuote);
   }
 }
 
 
-
 addQuoteForm.addEventListener("submit", function (e) {
   e.preventDefault();
 
-  const cat = categoryInput.value.trim().toLowerCase();
+  const category = categoryInput.value.trim().toLowerCase();
   const quote = quoteInput.value.trim();
 
-  if (!cat || !quote) return;
+  if (!category || !quote) return;
 
-  if (!quotesByCategory[cat]) {
-    quotesByCategory[cat] = [];
+  if (!quotesByCategory[category]) {
+    quotesByCategory[category] = [];
   }
 
-  quotesByCategory[cat].push(quote);
+  quotesByCategory[category].push(quote);
   saveQuotes();
   populateCategories();
-  categorySelect.value = cat;
+  categoryFilter.value = category;
   filterQuotes();
 
   categoryInput.value = "";
@@ -140,8 +139,54 @@ function importFromJsonFile(event) {
 }
 
 
-newQuoteButton.addEventListener("click", filterQuotes);
+async function fetchQuotesFromServer() {
+  try {
+    const response = await fetch(serverUrl);
+    const serverData = await response.json();
 
+    const serverQuotes = JSON.parse(serverData.title || "{}");
+
+    if (JSON.stringify(serverQuotes) !== JSON.stringify(quotesByCategory)) {
+      quotesByCategory = serverQuotes;
+      saveQuotes();
+      populateCategories();
+      filterQuotes();
+      showConflictNotice();
+    }
+  } catch (error) {
+    console.error("Sync error:", error);
+  }
+}
+
+function showConflictNotice() {
+  conflictNotice.style.display = "block";
+  setTimeout(() => {
+    conflictNotice.style.display = "none";
+  }, 5000);
+}
+
+
+async function sendQuotesToServer() {
+  try {
+    await fetch(serverUrl, {
+      method: "POST",
+      body: JSON.stringify({ title: JSON.stringify(quotesByCategory) }),
+      headers: { "Content-type": "application/json; charset=UTF-8" }
+    });
+    console.log("Quotes sent to server.");
+  } catch (error) {
+    console.error("Send error:", error);
+  }
+}
+
+
+syncNowBtn.addEventListener("click", fetchQuotesFromServer);
+
+
+setInterval(fetchQuotesFromServer, 10000);
+
+
+newQuoteButton.addEventListener("click", filterQuotes);
 populateCategories();
 filterQuotes();
 
