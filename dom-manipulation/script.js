@@ -170,7 +170,9 @@ async function sendQuotesToServer() {
     await fetch(serverUrl, {
       method: "POST",
       body: JSON.stringify({ title: JSON.stringify(quotesByCategory) }),
-      headers: { "Content-type": "application/json; charset=UTF-8" }
+      headers: {
+        "Content-Type": "application/json; charset=UTF-8"
+      }
     });
     console.log("Quotes sent to server.");
   } catch (error) {
