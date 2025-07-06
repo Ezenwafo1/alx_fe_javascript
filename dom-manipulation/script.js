@@ -139,18 +139,22 @@ function importFromJsonFile(event) {
 }
 
 
-async function sendQuotesToServer() {
+async function syncQuotes() {
   try {
-    await fetch(serverUrl, {
-      method: "POST",
-      body: JSON.stringify({ title: JSON.stringify(quotesByCategory) }),
-      headers: {
-        "Content-Type": "application/json; charset=UTF-8"
-      }
-    });
-    console.log("Quotes sent to server.");
+    const response = await fetch(serverUrl);
+    const serverData = await response.json();
+
+    const serverQuotes = JSON.parse(serverData.title || "{}");
+
+    if (JSON.stringify(serverQuotes) !== JSON.stringify(quotesByCategory)) {
+      quotesByCategory = serverQuotes;
+      saveQuotes();
+      populateCategories();
+      filterQuotes();
+      showConflictNotice();
+    }
   } catch (error) {
-    console.error("Send error:", error);
+    console.error("Sync error:", error);
   }
 }
 
