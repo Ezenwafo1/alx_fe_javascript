@@ -137,8 +137,7 @@ function importFromJsonFile(event) {
   fileReader.readAsText(event.target.files[0]);
 }
 
-
-async function fetchQuotesFromServer() {
+async function syncQuotes() {
   try {
     const response = await fetch(serverUrl);
     const serverData = await response.json();
